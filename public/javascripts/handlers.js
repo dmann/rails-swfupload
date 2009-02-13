@@ -1,3 +1,20 @@
+// Rails notes
+
+// This is the handlers.js file from swfupload's application demo
+
+// All image paths are changed from relative to absolute
+
+// Example:
+//   AddImage("images/" + image_name);  ->  AddImage("/images/" + image_name);
+
+// Images from the swfupload demo are saved in #{RAILS_ROOT}/public/images
+
+// uploadSuccess was changed
+// The line: AddImage("thumbnail.php?id=" + serverData);
+// was changed to: AddImage(serverData);
+// The rails photo controller should return a text string
+// containing the full URL to the thumbnail
+
 function fileQueueError(file, errorCode, message) {
 	try {
 		var imageName = "error.gif";
@@ -25,7 +42,7 @@ function fileQueueError(file, errorCode, message) {
 			break;
 		}
 
-		addImage("images/" + imageName);
+		addImage("/images/" + imageName);
 
 	} catch (ex) {
 		this.debug(ex);
@@ -67,12 +84,12 @@ function uploadSuccess(file, serverData) {
 		var progress = new FileProgress(file,  this.customSettings.upload_target);
 
 		if (serverData.substring(0, 7) === "FILEID:") {
-			addImage("thumbnail.php?id=" + serverData.substring(7));
+			addImage(serverData);
 
 			progress.setStatus("Thumbnail Created.");
 			progress.toggleCancel(false);
 		} else {
-			addImage("images/error.gif");
+			addImage("/images/error.gif");
 			progress.setStatus("Error.");
 			progress.toggleCancel(false);
 			alert(serverData);
@@ -135,7 +152,7 @@ function uploadError(file, errorCode, message) {
 			break;
 		}
 
-		addImage("images/" + imageName);
+		addImage("/images/" + imageName);
 
 	} catch (ex3) {
 		this.debug(ex3);
