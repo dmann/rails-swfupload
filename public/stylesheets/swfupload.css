@@ -1,3 +1,13 @@
+/* 
+ * Rails notes: This is the default.css file supplied by the swfupload
+ *              application demos. Some css declarations were commented
+ *              out to prevent conflicts with scaffold.css.
+ *              Also, Rails uses absolute paths to the images so the line
+ *                background-image: url(../images/cancelbutton.gif);
+ *              was changed to
+ *                background-image: url(/images/cancelbutton.gif);
+ */
+
 /* -----------------------------------------------
 	www.swfupload.org
 	Description: Common Screen Stylesheet for SWFUpload Demos
@@ -9,7 +19,7 @@
 	GLOBAL RESET 
    ----------------------------------------------- */
 
-html, body, div, span, applet, object, iframe,
+/*html, body, div, span, applet, object, iframe,
 h1, h2, h3, h4, h5, h6, p, blockquote, pre,
 a, abbr, acronym, address, big, cite, code,
 del, dfn, font, img, ins, kbd, q, s, samp,
@@ -28,7 +38,6 @@ table, caption, tbody, tfoot, thead, tr, th, td {
 	vertical-align: baseline;
 }
 
-/* remember to define focus styles! */
 :focus { outline: 0; }
 body {
 	line-height: 1;
@@ -38,7 +47,7 @@ body {
 ol, ul { 
 	list-style: none; 
 }
-/* tables still need 'cellspacing="0"' in the markup */
+
 table {
 	border-collapse: separate;
 	border-spacing: 0;
@@ -54,7 +63,7 @@ q:before, q:after {
 blockquote, q {
 	quotes: "" "";
 }
-
+*/
 
 /* ----------------------------------------------- 
 	BASIC ELEMENTS
@@ -62,7 +71,7 @@ blockquote, q {
    
    
 /* -- Text Styles ------------------------------- */
-html, 
+/*html, 
 body {
 	margin: 0;
 	padding: 0;
@@ -122,12 +131,12 @@ code {
 	overflow:auto;
 	padding: 0.3em 0.4em;
 	white-space:pre;
-}
+}*/
 
 /* -- Layout ------------------------------- */
 
 
-#header {
+/*#header {
 	background: #313131 url(../images/header-bg.jpg) repeat-x top left;
 	height: 125px;
 	position: relative;
@@ -141,7 +150,7 @@ code {
 		text-indent: -5000px;
 		overflow: hidden;
 	}
-	/* hide link text */
+
 	#logo a {
 		display: block;
 		color: #fff;
@@ -161,12 +170,12 @@ code {
 
 #content { width: 680px;}
 #content { margin: 20px 90px; }
-
+*/
 
 
 
 /* -- Form Styles ------------------------------- */
-form {	
+/*form {	
 	margin: 0;
 	padding: 0;
 }
@@ -214,7 +223,7 @@ textarea {
 
 
 
-input[disabled]{ border: 1px solid #ccc } /* FF 2 Fix */
+input[disabled]{ border: 1px solid #ccc } 
 
 
 label { 
@@ -223,6 +232,7 @@ label {
 	display:block;
 	margin-right: 5px;
 }
+*/
 
 #btnSubmit { margin: 0 0 0 155px ; }
 
@@ -317,7 +327,7 @@ a.progressCancel {
 	display: block;
 	height: 14px;
 	width: 14px;
-	background-image: url(../images/cancelbutton.gif);
+	background-image: url(/images/cancelbutton.gif);
 	background-repeat: no-repeat;
 	background-position: -14px 0px;
 	float: right;
