@@ -1,132 +1,201 @@
-// Rails notes
-
-// This is the handlers.js file from swfupload's application demo
-
-// All image paths are changed from relative to absolute
-
-// Example:
-//   AddImage("images/" + image_name);  ->  AddImage("/images/" + image_name);
-
-// Images from the swfupload demo are saved in #{RAILS_ROOT}/public/images
-
-// uploadSuccess was changed
-// The line: AddImage("thumbnail.php?id=" + server_data);
-// was changed to: AddImage(server_data);
-// The rails photo controller should return a text string
-// containing the full URL to the thumbnail
-
-function fileQueueError(fileObj, error_code, message) {
+function fileQueueError(file, errorCode, message) {
 	try {
-		var error_name = "";
-		switch(error_code) {
-			case SWFUpload.ERROR_CODE_QUEUE_LIMIT_EXCEEDED:
-				error_name = "You have attempted to queue too many files.";
-			break;
+		var imageName = "error.gif";
+		var errorName = "";
+		if (errorCode === SWFUpload.errorCode_QUEUE_LIMIT_EXCEEDED) {
+			errorName = "You have attempted to queue too many files.";
 		}
 
-		if (error_name !== "") {
-			alert(error_name);
+		if (errorName !== "") {
+			alert(errorName);
 			return;
 		}
 
-		switch(error_code) {
-			case SWFUpload.QUEUE_ERROR.ZERO_BYTE_FILE:
-				image_name = "zerobyte.gif";
+		switch (errorCode) {
+		case SWFUpload.QUEUE_ERROR.ZERO_BYTE_FILE:
+			imageName = "zerobyte.gif";
 			break;
-			case SWFUpload.QUEUE_ERROR.FILE_EXCEEDS_SIZE_LIMIT:
-				image_name = "toobig.gif";
+		case SWFUpload.QUEUE_ERROR.FILE_EXCEEDS_SIZE_LIMIT:
+			imageName = "toobig.gif";
 			break;
-			case SWFUpload.QUEUE_ERROR.ZERO_BYTE_FILE:
-			case SWFUpload.QUEUE_ERROR.INVALID_FILETYPE:
-			default:
-				alert(message);
-				image_name = "error.gif";
+		case SWFUpload.QUEUE_ERROR.ZERO_BYTE_FILE:
+		case SWFUpload.QUEUE_ERROR.INVALID_FILETYPE:
+		default:
+			alert(message);
 			break;
 		}
 
-		AddImage("/images/" + image_name);
+		addImage("images/" + imageName);
 
-	} catch (ex) { this.debug(ex); }
+	} catch (ex) {
+		this.debug(ex);
+	}
 
 }
 
-function fileDialogComplete(num_files_queued) {
+function fileDialogComplete(numFilesSelected, numFilesQueued) {
 	try {
-		if (num_files_queued > 0) {
+		if (numFilesQueued > 0) {
 			this.startUpload();
 		}
-	} catch (ex) { this.debug(ex); }
+	} catch (ex) {
+		this.debug(ex);
+	}
 }
 
-function uploadProgress(fileObj, bytesLoaded) {
+function uploadProgress(file, bytesLoaded) {
 
 	try {
-		var percent = Math.ceil((bytesLoaded / fileObj.size) * 100)
+		var percent = Math.ceil((bytesLoaded / file.size) * 100);
 
-		var progress = new FileProgress(fileObj,  this.customSettings.upload_target);
-		progress.SetProgress(percent);
+		var progress = new FileProgress(file,  this.customSettings.upload_target);
+		progress.setProgress(percent);
 		if (percent === 100) {
-			progress.SetStatus("Creating thumbnail...");
-			progress.ToggleCancel(false);
-			progress.ToggleCancel(true, this, fileObj.id);
+			progress.setStatus("Creating thumbnail...");
+			progress.toggleCancel(false, this);
 		} else {
-			progress.SetStatus("Uploading...");
-			progress.ToggleCancel(true, this, fileObj.id);
+			progress.setStatus("Uploading...");
+			progress.toggleCancel(true, this);
 		}
-	} catch (ex) { this.debug(ex); }
+	} catch (ex) {
+		this.debug(ex);
+	}
 }
 
-function uploadSuccess(fileObj, server_data) {
+function uploadSuccess(file, serverData) {
 	try {
-		AddImage(server_data);
+		var progress = new FileProgress(file,  this.customSettings.upload_target);
 
-		var progress = new FileProgress(fileObj,  this.customSettings.upload_target);
+		if (serverData.substring(0, 7) === "FILEID:") {
+			addImage("thumbnail.php?id=" + serverData.substring(7));
 
-		progress.SetStatus("Thumbnail Created.");
-		progress.ToggleCancel(false);
+			progress.setStatus("Thumbnail Created.");
+			progress.toggleCancel(false);
+		} else {
+			addImage("images/error.gif");
+			progress.setStatus("Error.");
+			progress.toggleCancel(false);
+			alert(serverData);
 
-	} catch (ex) { this.debug(ex); }
+		}
+
+
+	} catch (ex) {
+		this.debug(ex);
+	}
 }
 
-function uploadComplete(fileObj) {
+function uploadComplete(file) {
 	try {
 		/*  I want the next upload to continue automatically so I'll call startUpload here */
 		if (this.getStats().files_queued > 0) {
 			this.startUpload();
 		} else {
-			var progress = new FileProgress(fileObj,  this.customSettings.upload_target);
-			progress.SetComplete();
-			progress.SetStatus("All images received.");
-			progress.ToggleCancel(false);
+			var progress = new FileProgress(file,  this.customSettings.upload_target);
+			progress.setComplete();
+			progress.setStatus("All images received.");
+			progress.toggleCancel(false);
 		}
-	} catch (ex) { this.debug(ex); }
+	} catch (ex) {
+		this.debug(ex);
+	}
 }
 
-function uploadError(fileObj, error_code, message) {
-	var image_name =  "error.gif";
+function uploadError(file, errorCode, message) {
+	var imageName =  "error.gif";
+	var progress;
 	try {
-		switch(error_code) {
-			case SWFUpload.UPLOAD_ERROR.UPLOAD_STOPPED:
-				try {
-					var progress = new FileProgress(fileObj,  this.customSettings.upload_target);
-					progress.SetCancelled();
-					progress.SetStatus("Stopped");
-					progress.ToggleCancel(true, this, fileObj.id);
-				}
-				catch (ex) { this.debug(ex); }
-			case SWFUpload.UPLOAD_ERROR.UPLOAD_LIMIT_EXCEEDED:
-				image_name = "uploadlimit.gif";
+		switch (errorCode) {
+		case SWFUpload.UPLOAD_ERROR.FILE_CANCELLED:
+			try {
+				progress = new FileProgress(file,  this.customSettings.upload_target);
+				progress.setCancelled();
+				progress.setStatus("Cancelled");
+				progress.toggleCancel(false);
+			}
+			catch (ex1) {
+				this.debug(ex1);
+			}
 			break;
-			default:
-				alert(message);
+		case SWFUpload.UPLOAD_ERROR.UPLOAD_STOPPED:
+			try {
+				progress = new FileProgress(file,  this.customSettings.upload_target);
+				progress.setCancelled();
+				progress.setStatus("Stopped");
+				progress.toggleCancel(true);
+			}
+			catch (ex2) {
+				this.debug(ex2);
+			}
+		case SWFUpload.UPLOAD_ERROR.UPLOAD_LIMIT_EXCEEDED:
+			imageName = "uploadlimit.gif";
+			break;
+		default:
+			alert(message);
 			break;
 		}
 
-		AddImage("/images/" + image_name);
+		addImage("images/" + imageName);
 
-	} catch (ex) { this.debug(ex); }
+	} catch (ex3) {
+		this.debug(ex3);
+	}
 
 }
+
+
+function addImage(src) {
+	var newImg = document.createElement("img");
+	newImg.style.margin = "5px";
+
+	document.getElementById("thumbnails").appendChild(newImg);
+	if (newImg.filters) {
+		try {
+			newImg.filters.item("DXImageTransform.Microsoft.Alpha").opacity = 0;
+		} catch (e) {
+			// If it is not set initially, the browser will throw an error.  This will set it if it is not set yet.
+			newImg.style.filter = 'progid:DXImageTransform.Microsoft.Alpha(opacity=' + 0 + ')';
+		}
+	} else {
+		newImg.style.opacity = 0;
+	}
+
+	newImg.onload = function () {
+		fadeIn(newImg, 0);
+	};
+	newImg.src = src;
+}
+
+function fadeIn(element, opacity) {
+	var reduceOpacityBy = 5;
+	var rate = 30;	// 15 fps
+
+
+	if (opacity < 100) {
+		opacity += reduceOpacityBy;
+		if (opacity > 100) {
+			opacity = 100;
+		}
+
+		if (element.filters) {
+			try {
+				element.filters.item("DXImageTransform.Microsoft.Alpha").opacity = opacity;
+			} catch (e) {
+				// If it is not set initially, the browser will throw an error.  This will set it if it is not set yet.
+				element.style.filter = 'progid:DXImageTransform.Microsoft.Alpha(opacity=' + opacity + ')';
+			}
+		} else {
+			element.style.opacity = opacity / 100;
+		}
+	}
+
+	if (opacity < 100) {
+		setTimeout(function () {
+			fadeIn(element, opacity);
+		}, rate);
+	}
+}
+
 
 
 /* ******************************************
@@ -134,14 +203,14 @@ function uploadError(fileObj, error_code, message) {
  *	Control object for displaying file info
  * ****************************************** */
 
-function FileProgress(fileObj, target_id) {
-	this.file_progress_id = "divFileProgress";
+function FileProgress(file, targetID) {
+	this.fileProgressID = "divFileProgress";
 
-	this.fileProgressWrapper = document.getElementById(this.file_progress_id);
+	this.fileProgressWrapper = document.getElementById(this.fileProgressID);
 	if (!this.fileProgressWrapper) {
 		this.fileProgressWrapper = document.createElement("div");
 		this.fileProgressWrapper.className = "progressWrapper";
-		this.fileProgressWrapper.id = this.file_progress_id;
+		this.fileProgressWrapper.id = this.fileProgressID;
 
 		this.fileProgressElement = document.createElement("div");
 		this.fileProgressElement.className = "progressContainer";
@@ -154,7 +223,7 @@ function FileProgress(fileObj, target_id) {
 
 		var progressText = document.createElement("div");
 		progressText.className = "progressName";
-		progressText.appendChild(document.createTextNode(fileObj.name));
+		progressText.appendChild(document.createTextNode(file.name));
 
 		var progressBar = document.createElement("div");
 		progressBar.className = "progressBarInProgress";
@@ -170,93 +239,51 @@ function FileProgress(fileObj, target_id) {
 
 		this.fileProgressWrapper.appendChild(this.fileProgressElement);
 
-		document.getElementById(target_id).appendChild(this.fileProgressWrapper);
-		FadeIn(this.fileProgressWrapper, 0);
+		document.getElementById(targetID).appendChild(this.fileProgressWrapper);
+		fadeIn(this.fileProgressWrapper, 0);
 
 	} else {
 		this.fileProgressElement = this.fileProgressWrapper.firstChild;
-		this.fileProgressElement.childNodes[1].firstChild.nodeValue = fileObj.name;
+		this.fileProgressElement.childNodes[1].firstChild.nodeValue = file.name;
 	}
 
 	this.height = this.fileProgressWrapper.offsetHeight;
 
 }
-FileProgress.prototype.SetProgress = function(percentage) {
+FileProgress.prototype.setProgress = function (percentage) {
 	this.fileProgressElement.className = "progressContainer green";
 	this.fileProgressElement.childNodes[3].className = "progressBarInProgress";
 	this.fileProgressElement.childNodes[3].style.width = percentage + "%";
-}
-FileProgress.prototype.SetComplete = function() {
+};
+FileProgress.prototype.setComplete = function () {
 	this.fileProgressElement.className = "progressContainer blue";
 	this.fileProgressElement.childNodes[3].className = "progressBarComplete";
 	this.fileProgressElement.childNodes[3].style.width = "";
 
-}
-FileProgress.prototype.SetError = function() {
+};
+FileProgress.prototype.setError = function () {
 	this.fileProgressElement.className = "progressContainer red";
 	this.fileProgressElement.childNodes[3].className = "progressBarError";
 	this.fileProgressElement.childNodes[3].style.width = "";
 
-}
-FileProgress.prototype.SetCancelled = function() {
+};
+FileProgress.prototype.setCancelled = function () {
 	this.fileProgressElement.className = "progressContainer";
 	this.fileProgressElement.childNodes[3].className = "progressBarError";
 	this.fileProgressElement.childNodes[3].style.width = "";
 
-}
-FileProgress.prototype.SetStatus = function(status) {
+};
+FileProgress.prototype.setStatus = function (status) {
 	this.fileProgressElement.childNodes[2].innerHTML = status;
-}
+};
 
-FileProgress.prototype.ToggleCancel = function(show, upload_obj, file_id) {
+FileProgress.prototype.toggleCancel = function (show, swfuploadInstance) {
 	this.fileProgressElement.childNodes[0].style.visibility = show ? "visible" : "hidden";
-	if (upload_obj) {
-		this.fileProgressElement.childNodes[0].onclick = function() { upload_obj.cancelUpload(); return false; };
+	if (swfuploadInstance) {
+		var fileID = this.fileProgressID;
+		this.fileProgressElement.childNodes[0].onclick = function () {
+			swfuploadInstance.cancelUpload(fileID);
+			return false;
+		};
 	}
-}
-
-function AddImage(src) {
-	var new_img = document.createElement("img");
-	new_img.style.margin = "5px";
-
-	document.getElementById("thumbnails").appendChild(new_img);
-	if (new_img.filters) {
-		try {
-			new_img.filters.item("DXImageTransform.Microsoft.Alpha").opacity = 0;
-		} catch (e) {
-			// If it is not set initially, the browser will throw an error.  This will set it if it is not set yet.
-			new_img.style.filter = 'progid:DXImageTransform.Microsoft.Alpha(opacity=' + 0 + ')';
-		}
-	} else {
-		new_img.style.opacity = 0;
-	}
-
-	new_img.onload = function () { FadeIn(new_img, 0); };
-	new_img.src = src;
-}
-
-function FadeIn(element, opacity) {
-	var reduce_opacity_by = 15;
-	var rate = 30;	// 15 fps
-
-
-	if (opacity < 100) {
-		opacity += reduce_opacity_by;
-		if (opacity > 100) opacity = 100;
-
-		if (element.filters) {
-			try {
-				element.filters.item("DXImageTransform.Microsoft.Alpha").opacity = opacity;
-			} catch (e) {
-				// If it is not set initially, the browser will throw an error.  This will set it if it is not set yet.
-				element.style.filter = 'progid:DXImageTransform.Microsoft.Alpha(opacity=' + opacity + ')';
-			}
-		} else {
-			element.style.opacity = opacity / 100;
-		}
-	}
-
-	if (opacity < 100) {
-		setTimeout(function() { FadeIn(element, opacity); }, rate);
-	}
-}
+};
