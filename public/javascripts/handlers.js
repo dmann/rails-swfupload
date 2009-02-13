@@ -15,6 +15,9 @@
 // The rails photo controller should return a text string
 // containing the full URL to the thumbnail
 
+// Make sure uploadSuccess can read your return string to test if it's an
+// error or not
+
 function fileQueueError(file, errorCode, message) {
 	try {
 		var imageName = "error.gif";
@@ -83,7 +86,7 @@ function uploadSuccess(file, serverData) {
 	try {
 		var progress = new FileProgress(file,  this.customSettings.upload_target);
 
-		if (serverData.substring(0, 7) === "FILEID:") {
+		if (serverData.substring(0, 7) === "/photos") {
 			addImage(serverData);
 
 			progress.setStatus("Thumbnail Created.");
