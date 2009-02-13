@@ -37,7 +37,7 @@ Rails::Initializer.run do |config|
   # Make sure the secret is at least 30 characters and all random, 
   # no regular words or you'll be exposed to dictionary attacks.
   config.action_controller.session = {
-    :session_key => '_swfupload_v2.0_rails_demo_session',
+    :session_key => '_rails-swfupload_session',
     :secret      => 'e039e0753a1ea545002c0f1c41abf3f44eb36f2a64de0564cb3ff8b1be7070b552be355c2221ea9787f6154782f1af1e62c6cbf95c3a1fac2721bff9825a09da'
   }
 
