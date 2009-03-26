@@ -114,6 +114,14 @@ h2. Todo
 * Implement best method of passing session data through SWFUpload.
 
 
+h2. Paperclip
+
+There is a move in the community to use paperclip instead of attachment_fu. Both plugins have advantages and disadvantages. If you are interested in seeing an implementation of SWFUpload with Paperclip, I would try this project:
+
+"Jim Neath's SWFUpload Paperclip Example App":http://github.com/JimNeath/swfupload---paperclip-example-app/
+
+
 h2. Changes
 
+Wednesday, 25 March 2009, 11:13 PM - Added link to paperclip project
 Thursday, 12 February 2009, 11:31 PM - Updated to run Rails 2.2.2 and SWFUpload 2.2 Beta 5
