@@ -2,32 +2,14 @@ Technoweenie::AttachmentFu::InstanceMethods.module_eval do
 
   # Overriding this method to allow content_type to be detected when
   # swfupload submits images with content_type set to 'application/octet-stream'
-  def uploaded_data=(file_data)
-    if file_data.respond_to?(:content_type)
-      return nil if file_data.size == 0
-      self.content_type = detect_mimetype(file_data)
-      self.filename     = file_data.original_filename if respond_to?(:filename)
-    else
-      return nil if file_data.blank? || file_data['size'] == 0
-      self.content_type = file_data['content_type']
-      self.filename =  file_data['filename']
-      file_data = file_data['tempfile']
+  def uploaded_data_with_mimetype_detection=(file_data)
+    upload_results = self.uploaded_data_without_mimetype_detection=file_data
+    if upload_results && file_data.content_type.strip == "application/octet-stream"
+      self.content_type = File.mime_type?(file_data.original_filename)
     end
-    if file_data.is_a?(StringIO)
-      file_data.rewind
-      self.temp_data = file_data.read
-    else
-      self.temp_path = file_data
-    end
+    return upload_results
   end
-
-  def detect_mimetype(file_data)
-    if file_data.content_type.strip == "application/octet-stream"
-      return File.mime_type?(file_data.original_filename)
-    else
-      return file_data.content_type
-    end
-  end
+  alias_method_chain :uploaded_data=, :mimetype_detection
 
   protected
 
